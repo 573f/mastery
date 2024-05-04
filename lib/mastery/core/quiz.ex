@@ -29,6 +29,31 @@ defmodule Mastery.Core.Quiz do
     |> reset_template_cycle
   end
 
+  def answer_question(quiz, %Response{correct: true} = reponse) do
+    new_quiz =
+      quiz
+      |> inc_record
+      |> save_response(response)
+
+    maybe_advance(new_quiz, mastered?(new_quiz))
+  end
+
+  def answer_question(quiz, %Response{correct: false} = reponse) do
+    new_quiz =
+      quiz
+      |> reset_record
+      |> save_response(response)
+  end
+
+  def save_response(quiz, response) do
+    Map.put(quiz, :last_response, response)
+  end
+
+  def mastered?(quiz) do
+    score = Map.get(quiz.record, template(quiz).name, 0)
+    score == quiz.mastery
+  end
+
   defp pick_current_question(quiz) do
     Map.put(quiz, :current_question, select_a_randon_question(quiz))
   end
@@ -84,4 +109,7 @@ defmodule Mastery.Core.Quiz do
 
   defp add_to_list_or_nil(nil, template), do: [template]
   defp add_to_list_or_nil(templates, template), do: [template | templates]
+
+  defp inc_record(%{current_question: question} = quiz) do
+  end
 end
